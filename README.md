@@ -15,11 +15,11 @@ Web scrapping automation using Javascript, puppeteer:
 - The website resources are extracted as the detection signature set.
 
 **Source**: `archive_Script-hashlog.js`
-**Input**: URL file list, can use provided `safe-vn.txt`, `200-rand-deface-genarate1596046433.csv` or using your own, edit the path directly in the source code
+**Input**: URL file list, can use provided `200-safe-vn.txt`, `200-deface.csv` or using your own, edit the path directly in the source code
 ```js
 async function main(){
 	let all_urls;
-	all_urls = (await fse.readFile( 'safe-vn.txt', 'utf-8')).split('\r\n');
+	all_urls = (await fse.readFile( '200-safe-vn.txt', 'utf-8')).split('\r\n');
 ```
 **Output**:
 - `url_hash_log.csv`: Containing all signature that have been colected
@@ -40,7 +40,7 @@ n-gram frequency extraction
 - HTML source code data standardized through the HTML crawler will be converted through a preprocessing step into feature vector form.
 - After collecting a large enough amount as a profile, it is finally used as training data for a machine learning algorithm to build a classifier.
 
-**Source**: `tf_caculation-refactor.py`
+**Source**: `tf_caculation.py`
 
 **Input**:
 > Repo doesn't contain example crawled file
@@ -56,7 +56,7 @@ n-gram frequency extraction
 
 Python Machine learning Framwork (sklearn, matplotlib, numpy), RandomForest, NaiveBayes classifier
 
-**Source**: `Testing-feature-type-Check.py`
+**Source**: `model_and_measurement.py`
 
 **Input**: Vectorized data - You can use Example file from `tf_gram_count`
 **Output**: Result metric only - Example `0.25_final.csv`, `0.5_final.csv`
