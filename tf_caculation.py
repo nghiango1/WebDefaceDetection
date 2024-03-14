@@ -1,168 +1,202 @@
 import os
-# from sklearn.feature_extraction.text import CountVectorizer
 import csv
-from numpy import savetxt
-from bs4 import BeautifulSoup
 
-def get_valid_path(pages_path = ""):
-	path = os.listdir()
-	pages_path  = os.path.abspath(pages_path)
-	valid_path = filter(lambda k: os.path.isdir(k), [os.path.join(pages_path,x) for x in os.listdir(pages_path)])
-	valid_path = filter(lambda k: 'saved' in k, valid_path)
-	n = []
-	d = []
-	for i in valid_path:
-		if 'safe' in i: n += [i]
-		else: d += [i] 
-
-	for _normal_dirs in n:
-		normal_valid_path = filter(lambda k: os.path.isdir(k), \
-					[os.path.join(_normal_dirs,x) for x in os.listdir(_normal_dirs)])
-
-	for _deface_dirs in d:
-		deface_valid_path = filter(lambda k: os.path.isdir(k), \
-					[os.path.join(_deface_dirs,x) for x in os.listdir(_deface_dirs)])
-	return list(normal_valid_path),list(deface_valid_path)
+N_GRAM_SAVED_PATH = "n_gram_count/"
+TF_SAVED_PATH = "tf_para_top_300/"
+FORCE_RECOUNT = False
 
 
+# As `saved` output directory from `archive_page.js` crawler store each page
+# in seperated dir, this function return all child path in `saved` to a list
+def get_valid_path(pages_saved_path=""):
+    pages_saved_path = os.path.abspath(pages_saved_path)
+    valid_path = filter(os.path.isdir, [os.path.join(
+        pages_saved_path, x) for x in os.listdir(pages_saved_path)])
+    return list(valid_path)
+
+
+# Helper for debug, try to get url name when there error preprocessing a pages
+# As `archived_log.csv` contain the timespampt of every request, by skiping the
+# csv header row, we get row_1['url'] mean the first url being request, aka the
+# page url
 def get_url(path):
-	if not get_file(path,ARCHIVED_LOG): 
-		print ('Error no ARCHIVED_LOG', path)
-		return None
-	file_path = get_file(path,ARCHIVED_LOG)
-	f_input = open(file_path,'r', encoding='utf-8')
-	reader = csv.DictReader(f_input)
-	row_1 = reader.__next__()
-	return(row_1['url'])
+    file_path = get_file(path, "archived_log.csv")
+    if file_path is None:
+        print('Error no "archived_log.csv"', path)
+        return None
+    f_input = open(file_path, 'r', encoding='utf-8')
+    reader = csv.DictReader(f_input)
+    row_1 = reader.__next__()
+    return (row_1['url'])
 
-def get_file(path,name):
-	files = name
-	if not os.path.isdir(path):
-		return None
-	if os.path.exists(os.path.join(path,name)):
-		return os.path.join(path,name)
+
+# Helper to check if a file exist, return it path if it exist
+def get_file(path, name):
+    if not os.path.isdir(path):
+        return None
+    if os.path.exists(os.path.join(path, name)):
+        return os.path.join(path, name)
+
 
 def n_gram_counting(valid_path, fileName, n_gram):
-	all_file_path = filter(lambda k: os.path.exists(k), \
-					[os.path.join(path,fileName) for path in valid_path])
-	result = {}
-	for path in all_file_path:
-		try:
-			f_input = open(path,'r', encoding='utf-8')
-			string = f_input.read()
-		except Exception as e: 
-			print('	|',path,e)
-			continue
-			
-		# n_gram_matix = [string[i:i+n_gram] for i in range(0, len(string)- n_gram)]
-		for i in [string[i:i+n_gram] for i in range(0, len(string)- n_gram)]:
-			if not i in n_gram_matix:
-				n_gram_matix += [i]
-				
-		for i in n_gram_matix:
-			if i in result:
-				result[i] += 1
-			else:
-				result[i] = 1
-	return(result)
+    all_file_path = list(filter(os.path.exists, [os.path.join(
+        path, fileName) for path in valid_path]))
+    result = {}
+    for path in all_file_path:
+        try:
+            f_input = open(path, 'r', encoding='utf-8')
+            string = f_input.read()
+        except Exception as e:
+            print('	|', path, e)
+            continue
 
-def getPureText(dom):
-	soup = BeautifulSoup(dom, "html.parser")
-	text = soup.getText()
-	# for img in soup.findAll('img'):
-		# text += img.get('alt','') + os.linesep
-	return text
+        for i in [string[i:i+n_gram] for i in range(0, len(string) - n_gram)]:
+            if i in result:
+                result[i] += 1
+            else:
+                result[i] = 1
+    return result
 
-def tf_caculate(valid_path,fileName,n,n_gram_lists):
-	
-	all_file_path = filter(lambda k: os.path.exists(k), \
-					[os.path.join(path,fileName) for path in valid_path])
-	result = []
-	for path in all_file_path:
-		try:
-			f_input = open(path,'r', encoding='utf-8')
-			string = f_input.read()
-		except Exception as e: 
-			print('	|',path,e)
-			print('		|',get_url(path))
-			continue
-		if tf_caculate_string:
-			tf, max = tf_caculate_string(string,n,n_gram_lists)
-			if max != 0:
-				tf = [ i/max for i in tf]
-				result += [tf]
-		else:
-			print (' |',path)
-	return result
-		
-def tf_caculate_string(string,n,n_gram_lists, check=False):
-		
-	n_gram_matix = [string[i:i+n] for i in range(0, len(string)- n)]
-	result = [0]*len(n_gram_lists)
-	max = 0
-	for n_gram in n_gram_matix:
-		if n_gram in n_gram_lists:
-			i = n_gram_lists.index(n_gram)
-			result[i] += 1
-			if result[i] > max:
-					max = result[i]
-	# if max == 0: return None
-	# for i in range(n_gram_lists.__len__()):
-		# result[i] = result[i]/max
-	return result, max
 
-def save_n_gram_count(N_GRAM_SAVE_PATH,sorted_keys,n_gram,filename):
-	N_GRAM_COUNT_FILE_PATH = os.path.join(N_GRAM_SAVE_PATH,"_".join([filename,str(n_gram),'gram','count.csv']))
-	N_GRAM_COUNT_FILE = open(N_GRAM_COUNT_FILE_PATH,'w',encoding = 'utf-8')
-	N_GRAM_COUNT_FILE_writer = csv.writer(N_GRAM_COUNT_FILE, 'unix')
-	for i in sorted_keys:
-		N_GRAM_COUNT_FILE_writer.writerow([i[0],i[1]])
-	N_GRAM_COUNT_FILE.close()
-	
-def save_n_gram_tf(TF_SAVE_PATH,rows,label, n_gram,filename, mode= 'w'):
-	if rows.__len__() != label.__len__():
-		return None
-	TF_SAVE_FILE_PATH = os.path.join(TF_SAVE_PATH,"_".join([filename,str(n_gram),'gram','tf.csv']))
-	TF_SAVE_FILE = open(TF_SAVE_FILE_PATH,mode,encoding = 'utf-8')
-	TF_SAVE_FILE_writer = csv.writer(TF_SAVE_FILE, 'unix')
-	for i in range(rows.__len__()):
-		TF_SAVE_FILE_writer.writerow(rows[i]+[label[i]])
-	TF_SAVE_FILE.close()
-	
-def open_n_gram_count(N_GRAM_SAVE_PATH,n_gram,filename):
-	N_GRAM_COUNT_FILE_PATH = os.path.join(N_GRAM_SAVE_PATH,"_".join([filename,str(n_gram),'gram','count.csv']))
-	if os.path.exists(N_GRAM_COUNT_FILE_PATH):
-		result = []
-		N_GRAM_COUNT_FILE = open(N_GRAM_COUNT_FILE_PATH,'r',encoding = 'utf-8')
-		N_GRAM_COUNT_FILE_reader = csv.reader(N_GRAM_COUNT_FILE, 'unix')
-		for row in N_GRAM_COUNT_FILE_reader:
-			result += [row[0]]
-		N_GRAM_COUNT_FILE.close()
-		return result
-	return None
+# Vectorized all pages with a n-gram list reference
+def tf_caculate(valid_path, fileName, n, n_gram_lists):
+    all_file_path = list(filter(os.path.exists, [os.path.join(
+        path, fileName) for path in valid_path]))
+    result = []
+    for path in all_file_path:
+        try:
+            f_input = open(path, 'r', encoding='utf-8')
+            string = f_input.read()
+        except Exception as e:
+            print('	|', path, e)
+            print('		|', get_url(path))
+            continue
+        if tf_caculate_string:
+            tf, max = tf_caculate_string(string, n, n_gram_lists)
+            if max != 0:
+                tf = [i/max for i in tf]
+                result += [tf]
+        else:
+            print(' |', path)
+    return result
+
+
+# Return a vectorized representation of a string with a n-gram list reference
+def tf_caculate_string(string, n, n_gram_lists, check=False):
+    result = [0]*len(n_gram_lists)
+    max = 0
+    for n_gram in [string[i:i+n] for i in range(0, len(string) - n)]:
+        if n_gram in n_gram_lists:
+            i = n_gram_lists.index(n_gram)
+            result[i] += 1
+            if result[i] > max:
+                max = result[i]
+    return result, max
+
+
+# Saving n-gram counting result
+def save_n_gram_count(sorted_count_result, n_gram, filename):
+    global N_GRAM_SAVED_PATH
+
+    count_file_path = os.path.join(N_GRAM_SAVED_PATH, "_".join(
+        [filename, str(n_gram), 'gram', 'count.csv']))
+    count_file = open(count_file_path, 'w', encoding='utf-8')
+    N_GRAM_COUNT_FILE_writer = csv.writer(count_file, 'unix')
+    for i in sorted_count_result:
+        N_GRAM_COUNT_FILE_writer.writerow([i[0], i[1]])
+    count_file.close()
+
+
+# Saving pages tf vectorize result
+def save_n_gram_tf(rows, label, n_gram, filename, mode='w'):
+    global TF_SAVED_PATH
+
+    if rows.__len__() != label.__len__():
+        return None
+    saved_path = os.path.join(TF_SAVED_PATH, "_".join(
+        [filename, str(n_gram), 'gram', 'tf.csv']))
+    curr_file = open(saved_path, mode, encoding='utf-8')
+    csv_writer = csv.writer(curr_file, 'unix')
+    for i in range(rows.__len__()):
+        csv_writer.writerow(rows[i]+[label[i]])
+    curr_file.close()
+
+
+# Reading n-gram count result
+def open_n_gram_count(n_gram, filename):
+    global N_GRAM_SAVED_PATH
+
+    curr_file_path = os.path.join(N_GRAM_SAVED_PATH, "_".join(
+        [filename, str(n_gram), 'gram', 'count.csv']))
+    if os.path.exists(curr_file_path):
+        result = []
+        count_file = open(curr_file_path, 'r', encoding='utf-8')
+        csv_reader = csv.reader(count_file, 'unix')
+        for row in csv_reader:
+            result += [row[0]]
+        count_file.close()
+        return result
+    return None
+
+
+# Counting n-gram in all pages
+def run_n_gram_count(n_gram, filename, safe_pages_path, deface_pages_path):
+    pages_path = safe_pages_path+deface_pages_path
+
+    # `n_gram_counting` return as dict, we change it to list for sorting
+    n_gram_count_all = n_gram_counting(pages_path, filename, n_gram).items()
+
+    n_gram_count_all_sorted = sorted(n_gram_count_all, lambda x: x[1], True)
+    save_n_gram_count(n_gram_count_all_sorted, n_gram, filename)
+
+    return [cols[0] for cols in n_gram_count_all_sorted]
+
+
+# Preprocessing with each scenario of <n-gram><html-data> pair, save the final
+# preprocessing result vectorize data for modeling step
+def run(n_gram, filename, safe_pages_path, deface_pages_path):
+    global FORCE_RECOUNT
+    print("_".join([filename, str(n_gram), 'gram', 'count.csv']))
+
+    # Check if already done n-gram count, if not, start counting and
+    # save result to file. FORCE_RECOUNT can be set to True to enforce
+    # this to be alway run instead
+    n_gram_lists = open_n_gram_count(n_gram, filename)
+    if n_gram_lists is None or FORCE_RECOUNT:
+        n_gram_lists = n_gram_counting
+    n_gram_lists = n_gram_lists[:300]
+
+    safe_tf = tf_caculate(safe_pages_path, filename, n_gram, n_gram_lists)
+    label = [0] * safe_tf.__len__()
+    save_n_gram_tf(safe_tf, label, n_gram, filename, 'w')
+    deface_tf = tf_caculate(deface_pages_path, filename, n_gram, n_gram_lists)
+    label = [1] * deface_tf.__len__()
+    save_n_gram_tf(deface_tf, label, n_gram, filename, 'a')
+
 
 def main():
-	TF_SAVE_PATH = os.path.abspath('check-200-200')
-	# TF_SAVE_PATH = os.path.join(TF_SAVE_PATH,"_".join(n_gram,'gram','tf.csv'))
-	N_GRAM_SAVE_PATH = os.path.abspath('n_gram_count')
-	n,d = get_valid_path()
-	fileNames = ['text_only_index_loaded.html.txt','index_loaded.html','index.html']
-	n_gram_tests = [2,3]
-	for n_gram in n_gram_tests:
-		for filename in fileNames:
-			print("_".join([filename,str(n_gram),'gram','count.csv']))
-			n_gram_lists = open_n_gram_count(N_GRAM_SAVE_PATH,n_gram,filename)[:300]
-			
-			if not n_gram_lists:
-				n_gram_count_all = n_gram_counting(n+d, filename, n_gram)
-				n_gram_count_all_sorted = sorted(n_gram_count_all.items() , reverse=True, key=lambda x: x[1])
-				save_n_gram_count(N_GRAM_SAVE_PATH,n_gram_count_all_sorted,n_gram,filename)
-				n_gram_lists = [i[0] for i in sorted_keys[:300]]
-			
-			normal_tf = tf_caculate(n,filename,n_gram,n_gram_lists)
-			label = [0]* normal_tf.__len__()
-			save_n_gram_tf(TF_SAVE_PATH, normal_tf ,label, n_gram,filename, 'w')
-			deface_tf = tf_caculate(d,filename,n_gram,n_gram_lists)
-			label = [1]* deface_tf.__len__()
-			save_n_gram_tf(TF_SAVE_PATH, deface_tf ,label, n_gram,filename, 'a')
-main()
+    global TF_SAVED_PATH, N_GRAM_SAVED_PATH, FORCE_RECOUNT
+
+    TF_SAVED_PATH = os.path.abspath(TF_SAVED_PATH)
+    N_GRAM_SAVED_PATH = os.path.abspath(N_GRAM_SAVED_PATH)
+
+    os.makedirs(TF_SAVED_PATH, exist_ok=True)
+    os.makedirs(N_GRAM_SAVED_PATH, exist_ok=True)
+
+    # Example only - safe and deface page should be save in different directory
+    safe_pages_path = get_valid_path("saved/")
+
+    # Example only - safe and deface page should be save in different directory
+    deface_pages_path = get_valid_path("saved/")
+
+    fileNames = ['text_only_index_loaded.html.txt',
+                 'index_loaded.html', 'index.html']
+    n_gram_tests = [2, 3]
+
+    # Try every scenario
+    for n_gram in n_gram_tests:
+        for filename in fileNames:
+            run(n_gram, filename, safe_pages_path, deface_pages_path)
+
+if __name__ == "__main__":
+    main()
