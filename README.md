@@ -21,18 +21,23 @@ async function main(){
 	let all_urls;
 	all_urls = (await fse.readFile( '200-safe-vn.txt', 'utf-8')).split('\r\n');
 ```
-**Output**:
+**Output**: Every page data will be store in they own `saved/<url_sanitize>` directory (all character that be blocked by window will be change to `_`)
+- `saved_responsed_file/`: All page loaded resource will be pull and store in this directory with their correspond hash name
+- `archived_log.csv`: Log all request with timestamp
+  ```csv
+  timestamp,type,url,status
+  "910","Request","https://www.moha.gov.vn/","Sent"
+  ```
+- `title_log.csv`: The real title of the page
 - `url_hash_log.csv`: Containing all signature that have been colected
-- Page data:
-  - HTML data with 3 version:
-    - `text_only_index_loaded.html.txt`: Dynamic loadding page for 30s, but we only get `html.innerText` data
-    - `index_loaded.html`: Dynamic loadding page for 30s, then we get full loaded html data
-    - `index.html`: Static (page is not load) html file
-  - All page loaded resource will be pull and store `saved_respnsed_file` with their correspond hash name
+- `index.html`, `index_loaded.html`, `text_only_index_loaded.html.txt`: Page HTML data with 3 version
+  - `text_only_index_loaded.html.txt`: Dynamic loadding page for 30s, but we only get `html.innerText` data
+  - `index_loaded.html`: Dynamic loadding page for 30s, then we get full loaded html data
+  - `index.html`: Static (page is not load) html file
 
   ![image](https://github.com/nghiango1/WebDefaceDetection/assets/31164703/f2bfe048-e9d9-4c89-bcd1-ec2de9b3f034)
 
-> I don't have and will not provide any data that have been crawled and using for building the model here. It have been lost and can't be recovered. If you try repeated crawling and bypassing [zone-h.org](https://zone-h.org/) protected mechanism could lead to retricted and IP ban, please use the crawler with caution.
+> I don't have and will not provide any data that have been crawled and using for building the model here. It have been lost and can't be recovered, the file in saved directory was crawled recenterly just for example purpose. If you try repeated crawling and bypassing [zone-h.org](https://zone-h.org/) protected mechanism could lead to retricted and IP ban, please use the crawler with caution.
 
 ### Data preprocessing
 
@@ -42,8 +47,7 @@ n-gram frequency extraction
 
 **Source**: `tf_caculation.py`
 
-**Input**:
-> Repo doesn't contain example crawled file
+**Input**: `saved` directory
 - Counting all 2-gram, 3-gram with each of these 3 `html-data` files `[text_only_index_loaded.html.txt, index_loaded.html, index.html]` apperence, chosing the top 300 n-gram with highest appearence
 - Vectorize all page with each n-gram apearence in each page text file
 **Output**: Example output is provided

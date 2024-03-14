@@ -1,0 +1,27 @@
+{
+  "name": "webdefacedetection",
+  "version": "1.0.0",
+  "description": "A research project aim to build a new Detection tool using machine learning. Machine translate of the Research thesis can be found here: https://drive.google.com/file/d/1BrK4KZSfYeVjzzUKvmr7bjtyXWeUOw8P/view?usp=sharing",
+  "main": "archive_page.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nghiango1/WebDefaceDetection.git"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/nghiango1/WebDefaceDetection/issues"
+  },
+  "homepage": "https://github.com/nghiango1/WebDefaceDetection#readme",
+  "dependencies": {
+    "crypto": "^1.0.1",
+    "fs-extra": "^11.2.0",
+    "node-fetch": "^3.3.2",
+    "path": "^0.12.7",
+    "puppeteer": "^22.4.1"
+  }
+}
