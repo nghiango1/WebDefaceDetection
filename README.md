@@ -21,21 +21,23 @@ async function main(){
 	let all_urls;
 	all_urls = (await fse.readFile( '200-safe-vn.txt', 'utf-8')).split('\r\n');
 ```
-**Output**: Every page data will be store in they own `saved/<url_sanitize>` directory (all character that be blocked by window will be change to `_`)
-- `saved_responsed_file/`: All page loaded resource will be pull and store in this directory with their correspond hash name
-- `archived_log.csv`: Log all request with timestamp
-  ```csv
-  timestamp,type,url,status
-  "910","Request","https://www.moha.gov.vn/","Sent"
-  ```
-- `title_log.csv`: The real title of the page
-- `url_hash_log.csv`: Containing all signature that have been colected
-- `index.html`, `index_loaded.html`, `text_only_index_loaded.html.txt`: Page HTML data with 3 version
-  - `text_only_index_loaded.html.txt`: Dynamic loadding page for 30s, but we only get `html.innerText` data
-  - `index_loaded.html`: Dynamic loadding page for 30s, then we get full loaded html data
-  - `index.html`: Static (page is not load) html file
+**Output**: Run data:
+- `fail-log.csv`: Containt list of page URL that errors when crawling
+- Page data: Every page data will be store in they own `saved/<url_sanitize>` directory (all character that be blocked by window will be change to `_`)
+  - `saved_responsed_file/`: All page loaded resource will be pull and store in this directory with their correspond hash name
+  - `archived_log.csv`: Log all request with timestamp
+    ```csv
+    timestamp,type,url,status
+    "910","Request","https://www.moha.gov.vn/","Sent"
+    ```
+  - `title_log.csv`: The real title of the page
+  - `url_hash_log.csv`: Containing all signature that have been colected
+  - `index.html`, `index_loaded.html`, `text_only_index_loaded.html.txt`: Page HTML data with 3 version
+    - `text_only_index_loaded.html.txt`: Dynamic loadding page for 30s, but we only get `html.innerText` data
+    - `index_loaded.html`: Dynamic loadding page for 30s, then we get full loaded html data
+    - `index.html`: Static (page is not load) html file
 
-  ![image](https://github.com/nghiango1/WebDefaceDetection/assets/31164703/f2bfe048-e9d9-4c89-bcd1-ec2de9b3f034)
+    ![image](https://github.com/nghiango1/WebDefaceDetection/assets/31164703/f2bfe048-e9d9-4c89-bcd1-ec2de9b3f034)
 
 > I don't have and will not provide any data that have been crawled and using for building the model here. It have been lost and can't be recovered, the file in saved directory was crawled recenterly just for example purpose. If you try repeated crawling and bypassing [zone-h.org](https://zone-h.org/) protected mechanism could lead to retricted and IP ban, please use the crawler with caution.
 
@@ -70,16 +72,16 @@ Python Machine learning Framwork (sklearn, matplotlib, numpy), RandomForest, Nai
 ### Result analysis
 
 Using [confusion matrix](https://en.wikipedia.org/wiki/Confusion_matrix), I draw the conclusion base on 4 metric
-- Accuracy: Overall accuracy of the model `(TP+FN) / (TP+FP+TN+FN) × 100%`
+- Accuracy: Overall accuracy of the model. `(TP+FN) / (TP+FP+TN+FN) × 100%`
 - Percision: Accuracy of predicting the attacked sample. `TP / (TP+FP) ×100%`
 - Recall: Ability to find all attacked samples of the model. `TP / (TP+FN) × 100%`
 - Fail Alarm: False alarm rate. `FP / (FP+TN) ×100%`
 
-There is only the result with 400 records ( 200 normal **Vietnamese** page - 200 deface page) in this repo from provided URL list file. 
+There is only the result with 400 records ( 200 safe **Vietnamese** page - 200 deface page) in this repo from provided URL list file. 
 - `0.25_final.csv` contain result of the model build with 75% data use for tranning and 25% data use for test
 - `0.5_final.csv` contain result of the model build with 50% data use for tranning and 50% data use for test
 
-But, the biggest run of the thesis have 1600 records (with 800 Normal - 800 Deface pages) with 50% traning - 50% testing, which conclude the thesis proposed model can gives good performance and have a very high accuracy rate.
+But, the largest run of the thesis have 1600 records (with 800 safe **mix language** page - 800 Deface pages) with 50% traning - 50% testing, which conclude the thesis proposed model can gives good performance and have a very high accuracy rate.
 
 | **Clasification Algorithm** | **File**          | **n-gram** | **percision**  | **recall** | **accuracy**              | **Fail Alarm** |
 | --------------------------- | ----------------- | ---------- | -------------- | ---------- | ------------------------- | -------------- |
