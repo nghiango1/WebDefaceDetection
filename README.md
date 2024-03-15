@@ -2,6 +2,19 @@
 
 A research project aim to build a new Detection tool using machine learning. Machine translate of the Research thesis can be found here: https://drive.google.com/file/d/1BrK4KZSfYeVjzzUKvmr7bjtyXWeUOw8P/view?usp=sharing
 
+## How to use
+
+Quick guide
+
+```sh
+apt install npm node python3 python3-pip
+npm install
+pip install -r requirements.txt
+node archive_page.js
+python tf_caculation.py
+python model_and_measurement.py
+```
+
 ## Quick walkthrough
 
 ![detection_model](https://github.com/nghiango1/WebDefaceDetection/assets/31164703/a4d3a7fd-fe4d-4805-82ec-d14258c3d630)
