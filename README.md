@@ -28,12 +28,14 @@ Web scrapping automation using Javascript, puppeteer:
 - The website resources are extracted as the detection signature set.
 
 **Source**: `archive_Script-hashlog.js`
+
 **Input**: URL file list, can use provided `200-safe-vn.txt`, `200-deface.csv` or using your own, edit the path directly in the source code
 ```js
 async function main(){
 	let all_urls;
 	all_urls = (await fse.readFile( '200-safe-vn.txt', 'utf-8')).split('\r\n');
 ```
+
 **Output**: Run data:
 - `fail-log.csv`: Containt list of page URL that errors when crawling
 - Page data: Every page data will be store in they own `saved/<url_sanitize>` directory (all character that be blocked by window will be change to `_`)
