@@ -29,11 +29,11 @@ Web scrapping automation using Javascript, puppeteer:
 
 **Source**: `archive_Script-hashlog.js`
 
-**Input**: URL file list, can use provided `200-safe-vn.txt`, `200-deface.csv` or using your own, edit the path directly in the source code
+**Input**: URL file list, can use provided `200-safe-vn.csv`, `200-deface.csv` or using your own, edit the path directly in the source code
 ```js
 async function main(){
 	let all_urls;
-	all_urls = (await fse.readFile( '200-safe-vn.txt', 'utf-8')).split('\r\n');
+	all_urls = (await fse.readFile( '200-safe-vn.csv', 'utf-8')).split('\r\n');
 ```
 
 **Output**: Run data:
@@ -67,6 +67,7 @@ n-gram frequency extraction
 **Input**: `saved` directory
 - Counting all 2-gram, 3-gram with each of these 3 `html-data` files `[text_only_index_loaded.html.txt, index_loaded.html, index.html]` apperence, chosing the top 300 n-gram with highest appearence
 - Vectorize all page with each n-gram apearence in each page text file
+
 **Output**: Example output is provided
 - `n_gram_count`: Contain counting result from all set of input and config. `<n-gram><html-data>_count.csv`
 - `tf_gram_count`: Contain vectorized page data using the top 300 `n-gram` of corespond `html-data` file
@@ -80,6 +81,7 @@ Python Machine learning Framwork (sklearn, matplotlib, numpy), RandomForest, Nai
 **Source**: `model_and_measurement.py`
 
 **Input**: Vectorized data - You can use Example file from `tf_gram_count`
+
 **Output**: Result metric only - Example `0.25_final.csv`, `0.5_final.csv`
 - Using RandomForest, NaiveBayes classifier for modeling the input data
 - Model isn't save by default: New model will be train on the input on each run and only output the final result metric
